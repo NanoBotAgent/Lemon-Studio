@@ -2295,7 +2295,8 @@ fn load_mixer(events: &[Event], l: &Layout, enc: TextEnc) -> Vec<MixerTrack> {
     for (n, m) in l.mixer.iter().enumerate() {
         let index = n as u16;
         let from = starts[n];
-        let to = starts.get(n + 1).copied().or(l.mixer_params).unwrap_or(events.len());
+        // A damaged file can put the next track or the parameters before this track; then it holds no events.
+        let to = starts.get(n + 1).copied().or(l.mixer_params).unwrap_or(events.len()).clamp(from, events.len());
         let mut slots: [Option<SlotPlugin>; 10] = Default::default();
         let mut pending_plugin: Option<SlotPlugin> = None;
         let mut slot_cpu = [os_model::PluginCpu::default(); 10];
